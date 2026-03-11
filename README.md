@@ -24,8 +24,16 @@ Pi-style LM authentication helpers for DSPy.
 
 ## Install
 
-```bash
-pip install dspy-lm-auth
+```py
+%pip install dspy-lm-auth
+```
+
+```output:exec-1773240219480-pahro
+Running: uv pip install dspy-lm-auth
+--------------------------------------------------
+[2mAudited [1m1 package[0m [2min 10ms[0m
+--------------------------------------------------
+Note: Restart kernel to use newly installed packages.
 ```
 
 Or with `uv`:
@@ -50,6 +58,10 @@ dspy.configure(lm=lm)
 print(lm("hello")[0]["text"])
 ```
 
+```output:exec-1773240228078-aqrym
+Hello! How can I help?
+```
+
 You can also keep the original model string and apply the Codex auth route explicitly:
 
 ```python
@@ -57,6 +69,10 @@ import dspy_lm_auth
 
 lm = dspy_lm_auth.LM("openai/gpt-5.4", auth_provider="codex")
 print(lm("hello")[0]["text"])
+```
+
+```output:exec-1773240238429-rx9qs
+Hello! How can I help?
 ```
 
 ## A very cheap laptop stack: uv + llama-cpp + baguettotron + dspy
@@ -77,12 +93,14 @@ Start a local OpenAI-compatible server with `llama-cpp`:
 uv venv
 source .venv/bin/activate
 uv pip install "llama-cpp-python[server]" huggingface-hub dspy dspy-lm-auth
+```
 
+```sh
 uv run python -m llama_cpp.server \
   --host 127.0.0.1 \
   --port 8000 \
   --hf_model_repo_id P1eIAS/Baguettotron-GGUF \
-  --model Baguettotron-BF16.gguf
+  --model Baguettotron-BF16.gguf &&
 ```
 
 If that GGUF is too large for your machine, swap in a smaller GGUF from the same repo.
@@ -102,6 +120,9 @@ local_lm = dspy.LM(
 dspy.configure(lm=local_lm, adapter=dspy.JSONAdapter())
 ```
 
+```output:exec-1773240681407-w56n4
+```
+
 ## Tiny GEPA demo: optimize a French→English translator
 
 This is a small self-contained demo that:
@@ -110,9 +131,29 @@ This is a small self-contained demo that:
 - uses your ChatGPT Codex subscription via `dspy-lm-auth` as the **GEPA reflection model**
 - optimizes a tiny translator on just **10 French→English examples**
 
+
+
+```python
+%pip install dspy_template_adapter
+```
+
+```output:exec-1773243237064-pojcy
+Running: uv pip install dspy_template_adapter
+--------------------------------------------------
+[2mResolved [1m73 packages[0m [2min 200ms[0m
+[2mPrepared [1m1 package[0m [2min 30ms[0m
+[2mInstalled [1m1 package[0m [2min 2ms[0m
+ [32m+[0m [1mdspy-template-adapter[0;2m==0.2.2[0m
+--------------------------------------------------
+Note: Restart kernel to use newly installed packages.
+```
+
+
 ```python
 import dspy
 import dspy_lm_auth
+from dspy_template_adapter import TemplateAdapter, Predict
+
 
 # Patch dspy.LM so `codex/...` works.
 dspy_lm_auth.install()
@@ -120,7 +161,7 @@ dspy_lm_auth.install()
 # Student model: local llama-cpp server.
 student_lm = dspy.LM(
     "openai/local-model",
-    api_base="http://localhost:8000/v1",
+    api_base="http://192.168.2.24:8000/v1",
     api_key="",
     model_type="chat",
 )
@@ -139,7 +180,15 @@ class TranslateFrenchToEnglish(dspy.Signature):
     english: str = dspy.OutputField(desc="Natural English translation")
 
 
-translator = dspy.Predict(TranslateFrenchToEnglish)
+adapter = TemplateAdapter(
+    messages=[
+        {"role": "system", "content": "{instruction}"},
+        {"role": "user", "content": "{inputs()}"},
+    ],
+    parse_mode="full_text",
+)
+
+translator = Predict(TranslateFrenchToEnglish, adapter=adapter)
 
 pairs = [
     ("bonjour", "hello"),
@@ -161,7 +210,42 @@ examples = [
 
 trainset = examples[:8]
 valset = examples[8:]
+```
 
+```output:exec-1773245901342-lh7nu
+```
+
+
+```python
+adapter.format(signature=translator.signature, demos=[], inputs={"french": "bonjour et merci"})
+```
+
+```output:exec-1773246381356-empoc
+Out[39]: 
+[{'role': 'system',
+  'content': 'Translate the French input into short, natural English.'},
+ {'role': 'user', 'content': 'french: bonjour et merci'}]
+```
+
+`TemplateAdapter.format(...)` expects a **DSPy signature**, not a `Predict` module. In this example the correct call is `translator.signature`, not `translator`. The template also needs `{instruction}` and `{inputs(...)}` — the earlier `{instruction}}` and `{input(...)}` forms are invalid.
+
+
+```python
+# Requires the local llama-cpp server above to be running.
+translator(french="ceci est vert")
+```
+
+```output:exec-1773245948646-mybkn
+Out[36]: 
+Prediction(
+    english="Okay, that's green."
+)
+```
+
+This call should work once the local `llama-cpp` server is running.
+
+
+```py
 
 def metric(gold, pred, trace=None, pred_name=None, pred_trace=None):
     guess = pred.english.strip()
@@ -194,6 +278,190 @@ gepa = dspy.GEPA(
 
 optimized = gepa.compile(translator, trainset=trainset, valset=valset)
 
+```
+
+```output:exec-1773245960807-ba341
+2026/03/11 12:19:20 INFO dspy.teleprompt.gepa.gepa: Running GEPA for approx 388 metric calls of the program. This amounts to 38.80 full evals on the train+val set.
+2026/03/11 12:19:20 INFO dspy.teleprompt.gepa.gepa: Using 2 examples for tracking Pareto scores. You can consider using a smaller sample of the valset to allow GEPA to explore more diverse solutions within the same budget. GEPA requires you to provide the smallest valset that is just large enough to match your downstream task distribution, while providing as large trainset as possible.
+GEPA Optimization:   0% 0/388 [00:00<?, ?rollouts/s]2026/03/11 12:19:20 INFO dspy.evaluate.evaluate: Average Metric: 0.0 / 2 (0.0%)
+2026/03/11 12:19:20 INFO dspy.teleprompt.gepa.gepa: Iteration 0: Base program full valset score: 0.0 over 2 / 2 examples
+GEPA Optimization:   1% 2/388 [00:00<00:20, 18.54rollouts/s]2026/03/11 12:19:20 INFO dspy.teleprompt.gepa.gepa: Iteration 1: Selected program 0 score: 0.0
+Average Metric: 0.00 / 3 (0.0%): 100% 3/3 [00:00<00:00, 27.62it/s]
+2026/03/11 12:19:21 INFO dspy.evaluate.evaluate: Average Metric: 0.0 / 3 (0.0%)
+/home/maxime/Projects/dspy-lm-auth/.venv/lib/python3.13/site-packages/pydantic/main.py:464: UserWarning: Pydantic serializer warnings:
+  PydanticSerializationUnexpectedValue(Expected `ResponseAPIUsage` - serialized value may not be as expected [field_name='usage', input_value={'completion_tokens': 211..., 'video_tokens': None}}, input_type=dict])
+  return self.__pydantic_serializer__.to_python(
+2026/03/11 12:19:25 INFO dspy.teleprompt.gepa.gepa: Iteration 1: Proposed new text for self: Translate the provided French text into short, natural English.
+
+Output rules:
+- Return only the English translation.
+- Do not add explanations, notes, analysis, or extra text.
+- Do not restate the French.
+- Keep the translation concise and idiomatic.
+
+.
+.
+[TRUNCATED]
+.
+.
+
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 70: Val aggregate for new program: 0.5
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 70: Individual valset scores for new program: {0: 0.0, 1: 1.0}
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 70: New valset pareto front scores: {0: 0.0, 1: 1.0}
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 70: Valset pareto front aggregate score: 0.5
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 70: Updated valset pareto front programs: {0: {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}, 1: {4, 9, 10, 11, 13, 15}}
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 70: Best valset aggregate score so far: 0.5
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 70: Best program as per aggregate score on valset: 4
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 70: Best score on valset: 0.5
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 70: Linear pareto front program index: 4
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 70: New program candidate index: 15
+GEPA Optimization:  86% 332/388 [04:39<00:48,  1.14rollouts/s]2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 71: No merge candidates found
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 71: Selected program 15 score: 0.5
+Average Metric: 3.00 / 3 (100.0%): 100% 3/3 [00:00<00:00, 29.59it/s]
+2026/03/11 12:24:00 INFO dspy.evaluate.evaluate: Average Metric: 3.0 / 3 (100.0%)
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 71: All subsample scores perfect. Skipping.
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 71: Reflective mutation did not propose a new candidate
+GEPA Optimization:  86% 335/388 [04:39<00:40,  1.32rollouts/s]2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 72: Selected program 15 score: 0.5
+Average Metric: 3.00 / 3 (100.0%): 100% 3/3 [00:00<00:00, 27.48it/s]
+2026/03/11 12:24:00 INFO dspy.evaluate.evaluate: Average Metric: 3.0 / 3 (100.0%)
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 72: All subsample scores perfect. Skipping.
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 72: Reflective mutation did not propose a new candidate
+GEPA Optimization:  87% 338/388 [04:39<00:32,  1.56rollouts/s]2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 73: Selected program 15 score: 0.5
+Average Metric: 3.00 / 3 (100.0%): 100% 3/3 [00:00<00:00, 756.37it/s]
+2026/03/11 12:24:00 INFO dspy.evaluate.evaluate: Average Metric: 3.0 / 3 (100.0%)
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 73: All subsample scores perfect. Skipping.
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 73: Reflective mutation did not propose a new candidate
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 74: Selected program 15 score: 0.5
+Average Metric: 3.00 / 3 (100.0%): 100% 3/3 [00:00<00:00, 605.01it/s]
+2026/03/11 12:24:00 INFO dspy.evaluate.evaluate: Average Metric: 3.0 / 3 (100.0%)
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 74: All subsample scores perfect. Skipping.
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 74: Reflective mutation did not propose a new candidate
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 75: Selected program 15 score: 0.5
+Average Metric: 3.00 / 3 (100.0%): 100% 3/3 [00:00<00:00, 681.52it/s]
+2026/03/11 12:24:00 INFO dspy.evaluate.evaluate: Average Metric: 3.0 / 3 (100.0%)
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 75: All subsample scores perfect. Skipping.
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 75: Reflective mutation did not propose a new candidate
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 76: Selected program 15 score: 0.5
+Average Metric: 3.00 / 3 (100.0%): 100% 3/3 [00:00<00:00, 580.10it/s]
+2026/03/11 12:24:00 INFO dspy.evaluate.evaluate: Average Metric: 3.0 / 3 (100.0%)
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 76: All subsample scores perfect. Skipping.
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 76: Reflective mutation did not propose a new candidate
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 77: Selected program 15 score: 0.5
+Average Metric: 3.00 / 3 (100.0%): 100% 3/3 [00:00<00:00, 825.27it/s]
+2026/03/11 12:24:00 INFO dspy.evaluate.evaluate: Average Metric: 3.0 / 3 (100.0%)
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 77: All subsample scores perfect. Skipping.
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 77: Reflective mutation did not propose a new candidate
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 78: Selected program 15 score: 0.5
+Average Metric: 3.00 / 3 (100.0%): 100% 3/3 [00:00<00:00, 649.24it/s]
+2026/03/11 12:24:00 INFO dspy.evaluate.evaluate: Average Metric: 3.0 / 3 (100.0%)
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 78: All subsample scores perfect. Skipping.
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 78: Reflective mutation did not propose a new candidate
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 79: Selected program 15 score: 0.5
+Average Metric: 3.00 / 3 (100.0%): 100% 3/3 [00:00<00:00, 692.97it/s]
+2026/03/11 12:24:00 INFO dspy.evaluate.evaluate: Average Metric: 3.0 / 3 (100.0%)
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 79: All subsample scores perfect. Skipping.
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 79: Reflective mutation did not propose a new candidate
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 80: Selected program 15 score: 0.5
+Average Metric: 3.00 / 3 (100.0%): 100% 3/3 [00:00<00:00, 651.73it/s]
+2026/03/11 12:24:00 INFO dspy.evaluate.evaluate: Average Metric: 3.0 / 3 (100.0%)
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 80: All subsample scores perfect. Skipping.
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 80: Reflective mutation did not propose a new candidate
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 81: Selected program 15 score: 0.5
+Average Metric: 3.00 / 3 (100.0%): 100% 3/3 [00:00<00:00, 696.81it/s]
+2026/03/11 12:24:00 INFO dspy.evaluate.evaluate: Average Metric: 3.0 / 3 (100.0%)
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 81: All subsample scores perfect. Skipping.
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 81: Reflective mutation did not propose a new candidate
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 82: Selected program 15 score: 0.5
+Average Metric: 3.00 / 3 (100.0%): 100% 3/3 [00:00<00:00, 809.61it/s]
+2026/03/11 12:24:00 INFO dspy.evaluate.evaluate: Average Metric: 3.0 / 3 (100.0%)
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 82: All subsample scores perfect. Skipping.
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 82: Reflective mutation did not propose a new candidate
+GEPA Optimization:  95% 368/388 [04:40<00:03,  5.11rollouts/s]2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 83: Selected program 15 score: 0.5
+Average Metric: 3.00 / 3 (100.0%): 100% 3/3 [00:00<00:00, 260.18it/s]
+2026/03/11 12:24:00 INFO dspy.evaluate.evaluate: Average Metric: 3.0 / 3 (100.0%)
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 83: All subsample scores perfect. Skipping.
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 83: Reflective mutation did not propose a new candidate
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 84: Selected program 15 score: 0.5
+Average Metric: 3.00 / 3 (100.0%): 100% 3/3 [00:00<00:00, 304.98it/s]
+2026/03/11 12:24:00 INFO dspy.evaluate.evaluate: Average Metric: 3.0 / 3 (100.0%)
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 84: All subsample scores perfect. Skipping.
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 84: Reflective mutation did not propose a new candidate
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 85: Selected program 15 score: 0.5
+Average Metric: 3.00 / 3 (100.0%): 100% 3/3 [00:00<00:00, 636.88it/s]
+2026/03/11 12:24:00 INFO dspy.evaluate.evaluate: Average Metric: 3.0 / 3 (100.0%)
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 85: All subsample scores perfect. Skipping.
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 85: Reflective mutation did not propose a new candidate
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 86: Selected program 15 score: 0.5
+Average Metric: 3.00 / 3 (100.0%): 100% 3/3 [00:00<00:00, 335.72it/s]
+2026/03/11 12:24:00 INFO dspy.evaluate.evaluate: Average Metric: 3.0 / 3 (100.0%)
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 86: All subsample scores perfect. Skipping.
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 86: Reflective mutation did not propose a new candidate
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 87: Selected program 15 score: 0.5
+Average Metric: 3.00 / 3 (100.0%): 100% 3/3 [00:00<00:00, 450.45it/s]
+2026/03/11 12:24:00 INFO dspy.evaluate.evaluate: Average Metric: 3.0 / 3 (100.0%)
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 87: All subsample scores perfect. Skipping.
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 87: Reflective mutation did not propose a new candidate
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 88: Selected program 15 score: 0.5
+Average Metric: 3.00 / 3 (100.0%): 100% 3/3 [00:00<00:00, 710.50it/s]
+2026/03/11 12:24:00 INFO dspy.evaluate.evaluate: Average Metric: 3.0 / 3 (100.0%)
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 88: All subsample scores perfect. Skipping.
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 88: Reflective mutation did not propose a new candidate
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 89: Selected program 15 score: 0.5
+Average Metric: 3.00 / 3 (100.0%): 100% 3/3 [00:00<00:00, 772.62it/s]
+2026/03/11 12:24:00 INFO dspy.evaluate.evaluate: Average Metric: 3.0 / 3 (100.0%)
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 89: All subsample scores perfect. Skipping.
+Optimized instruction:
+
+Translate the provided French text into English.
+
+Input:
+- You will receive one field containing French text, typically labeled `french`.
+
+Output:
+- Return only the English translation as plain text.
+- Do not include labels, JSON, metadata, quotes, explanations, comments, annotations, reasoning, or alternatives.
+
+Requirements:
+- Translate only the French input and nothing else.
+- Preserve the original meaning exactly.
+- Preserve pronouns exactly.
+- Preserve tense, mood, register, and politeness level.
+- Keep the English short, natural, direct, and idiomatic.
+- Prefer direct idiomatic equivalents over overly literal phrasing.
+- Do not add words not supported by the French, except where needed for natural idiomatic English.
+- Do not use contractions. For example:
+  - `je suis fatigué` → `I am tired`
+  - `je ne comprends pas` → `I do not understand`
+- Preserve punctuation from the French input.
+- Do not add terminal punctuation if it is not present in the French.
+- Match capitalization naturally in English; for very short inputs such as greetings or simple questions, prefer lowercase unless capitalization is clearly required.
+- For very short greetings, prefer no final period.
+
+Specific preferences:
+- For common travel/location usage, translate `gare` as `train station`, not `station`.
+- Translate `j'aime` in neutral contexts as `I like`, not `I love`, unless the French clearly conveys stronger emphasis.
+
+Examples:
+- `pouvez-vous m'aider ?` → `can you help me?`
+- `bonjour` → `hello`
+- `merci beaucoup` → `thank you very much`
+- `j'aime apprendre le français` → `I like learning French`
+- `où est la gare ?` → `where is the train station?`
+- `il fait très chaud aujourd'hui` → `it is very hot today`
+- `je suis fatigué` → `I am tired`
+- `je ne comprends pas` → `I do not understand`
+
+Final rule:
+- Return only the translated English text and nothing else.
+
+2026/03/11 12:24:00 INFO dspy.teleprompt.gepa.gepa: Iteration 89: Reflective mutation did not propose a new candidate
+GEPA Optimization:  99% 386/388 [04:40<00:01,  1.38rollouts/s]
+I do not understand
+how much does it cost?
+```
+
+ 
+```python
 print("Optimized instruction:\n")
 print(optimized.signature.instructions)
 print()
@@ -201,6 +469,57 @@ print()
 print(optimized(french="je ne comprends pas").english)
 print(optimized(french="combien ça coûte ?").english)
 ```
+
+```output:exec-1773246346946-33f3h
+Optimized instruction:
+
+Translate the provided French text into English.
+
+Input:
+- You will receive one field containing French text, typically labeled `french`.
+
+Output:
+- Return only the English translation as plain text.
+- Do not include labels, JSON, metadata, quotes, explanations, comments, annotations, reasoning, or alternatives.
+
+Requirements:
+- Translate only the French input and nothing else.
+- Preserve the original meaning exactly.
+- Preserve pronouns exactly.
+- Preserve tense, mood, register, and politeness level.
+- Keep the English short, natural, direct, and idiomatic.
+- Prefer direct idiomatic equivalents over overly literal phrasing.
+- Do not add words not supported by the French, except where needed for natural idiomatic English.
+- Do not use contractions. For example:
+  - `je suis fatigué` → `I am tired`
+  - `je ne comprends pas` → `I do not understand`
+- Preserve punctuation from the French input.
+- Do not add terminal punctuation if it is not present in the French.
+- Match capitalization naturally in English; for very short inputs such as greetings or simple questions, prefer lowercase unless capitalization is clearly required.
+- For very short greetings, prefer no final period.
+
+Specific preferences:
+- For common travel/location usage, translate `gare` as `train station`, not `station`.
+- Translate `j'aime` in neutral contexts as `I like`, not `I love`, unless the French clearly conveys stronger emphasis.
+
+Examples:
+- `pouvez-vous m'aider ?` → `can you help me?`
+- `bonjour` → `hello`
+- `merci beaucoup` → `thank you very much`
+- `j'aime apprendre le français` → `I like learning French`
+- `où est la gare ?` → `where is the train station?`
+- `il fait très chaud aujourd'hui` → `it is very hot today`
+- `je suis fatigué` → `I am tired`
+- `je ne comprends pas` → `I do not understand`
+
+Final rule:
+- Return only the translated English text and nothing else.
+
+I do not understand
+how much does it cost?
+```
+
+
 
 Notes:
 
