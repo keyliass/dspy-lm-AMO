@@ -1,54 +1,47 @@
-# dspy-lm-auth
+# dspy-lm-auth: GEPA Test Fork
 
 [![CI](https://github.com/MaximeRivest/dspy-lm-auth/actions/workflows/ci.yml/badge.svg)](https://github.com/MaximeRivest/dspy-lm-auth/actions/workflows/ci.yml) [![PyPI version](https://img.shields.io/pypi/v/dspy-lm-auth.svg)](https://pypi.org/project/dspy-lm-auth/) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/MaximeRivest/dspy-lm-auth/blob/main/LICENSE)
 
-Pi-style LM authentication helpers for DSPy.
+This fork is used as a simple GEPA test base on in-house datasets.
 
-`dspy-lm-auth` lets DSPy reuse Pi credentials from `~/.pi/agent/auth.json`, including ChatGPT Codex subscription auth.
+The underlying package still does the same core job:
+- patch `dspy.LM` so `codex/...` routes work in DSPy
+- reuse Pi-style credentials from `~/.pi/agent/auth.json`
+- let you use a stronger subscription-backed reflection model for GEPA
 
-The nicest way to use it is not as an isolated auth helper, but as the missing piece in a very practical DSPy workflow:
+The difference in this fork is the intent:
+- keep the auth helper
+- keep the local-student plus stronger-reflection workflow
+- add a small house dataset layer under [`datasets/`](datasets/)
+- use the repo as a practical sandbox for GEPA iterations
 
-- run a **small model locally** for the bulk of your cheap inference
-- use your **existing ChatGPT subscription** as the stronger GEPA reflection model
+## Repository Goal
 
-If you already pay for ChatGPT Plus or Pro, this gives you a pleasant way to explore DSPy without setting up a separate metered OpenAI API workflow just to optimize prompts.
+This repository is meant to be a lightweight place to test:
+- a local or cheap **student model**
+- `codex/gpt-5.4` as the **reflection model**
+- GEPA on small structured in-house datasets
 
-> Local compute is not literally free — your machine still does work — but it is a very good **no-extra-API-bill** workflow for experimentation.
+The current starter dataset is:
+- [`datasets/afso_requirements_gepa_v1.jsonl`](datasets/afso_requirements_gepa_v1.jsonl)
 
-## Current support
-
-- OpenAI Codex / ChatGPT Plus or Pro subscription
-
-## What this guide will show
-
-We will build a tiny French→English translator in DSPy.
-
-The pattern is simple:
-
-1. run `qwen3.5:0.8b` locally with Ollama
-2. use that local model as the **student model**
-3. use `codex/gpt-5.4` through `dspy-lm-auth` as the **reflection model**
-4. let GEPA improve the student program
-
-This README intentionally sticks to `JSONAdapter()`.
-
-That is not because other adapters are uninteresting — quite the opposite. It is because a good tutorial should hold one thing steady at a time. If you want to compare `JSONAdapter`, `XMLAdapter`, and custom templated adapters, that is best treated as a separate benchmark project.
+It is intentionally small and stable so prompt optimization can be tested quickly before moving to larger internal datasets.
 
 ## Install
 
 ```bash
-uv pip install dspy-lm-auth
+uv sync --extra dev
 ```
 
 Or with `pip`:
 
 ```bash
-pip install dspy-lm-auth
+pip install -e .[dev]
 ```
 
-## One-time login
+## One-Time Login
 
-If you already use Pi and your credentials are present in `~/.pi/agent/auth.json`, you can skip this step.
+If Pi credentials are already present in `~/.pi/agent/auth.json`, nothing else is needed.
 
 Otherwise:
 
@@ -58,196 +51,73 @@ import dspy_lm_auth
 dspy_lm_auth.login("codex")
 ```
 
-That starts the OAuth flow and stores the resulting credentials in Pi's auth file.
+This starts the OAuth flow and stores the credential in Pi's auth file.
 
-## Tutorial: local DSPy + subscription-powered GEPA
+## Minimal GEPA Setup
 
-### Step 1: run a small local model with Ollama
+The intended workflow is:
+1. run a small student model locally
+2. use `codex/gpt-5.4` as the reflection model
+3. optimize a DSPy program against a small house dataset
 
-On Linux, install Ollama with:
-
-```bash
-curl -fsSL https://ollama.com/install.sh | sh
-```
-
-If the server is not already running, start it:
-
-```bash
-ollama serve
-```
-
-Now pull the model:
-
-```bash
-ollama pull qwen3.5:0.8b
-```
-
-Sanity check:
-
-```bash
-ollama run qwen3.5:0.8b --think=false "Translate French to English and return only the translation: merci beaucoup"
-```
-
-### Why `ollama_chat/...` and `think=False`?
-
-For this model family, the cleanest DSPy setup is the native Ollama LiteLLM route:
-
-- use `ollama_chat/qwen3.5:0.8b`
-- set `think=False`
-
-That gives a cleaner programming experience than relying on the OpenAI-compatible Ollama endpoint for this particular model.
-
-### Step 2: configure the two models in DSPy
+Example setup:
 
 ```python
 import dspy
 import dspy_lm_auth
 
-# Patch dspy.LM so `codex/...` works.
 dspy_lm_auth.install()
 
-# Cheap local student model.
 student_lm = dspy.LM(
     "ollama_chat/qwen3.5:0.8b",
     api_base="http://127.0.0.1:11434",
-    api_key="ollama",  # dummy value; LiteLLM expects one
+    api_key="ollama",
     model_type="chat",
     think=False,
     temperature=0,
-    max_tokens=200,
 )
 
-# Stronger reflection model used by GEPA to improve the prompt.
 reflection_lm = dspy.LM("codex/gpt-5.4")
 
-# All program inference goes through the local student model.
 dspy.configure(lm=student_lm, adapter=dspy.JSONAdapter())
 ```
 
-At this point you have the whole idea in place:
+## Dataset Shape
 
-- **student model** = local, cheap, yours
-- **reflection model** = stronger, subscription-backed, already paid for
+The house dataset in this fork is JSONL.
 
-### Step 3: write a tiny DSPy program
+Each row is designed for a simple GEPA-friendly task:
+- input: `question` plus retrieved `context`
+- output: short `answer` plus structured requirement fields
 
-```python
-import dspy
+Typical fields:
+- `id`
+- `split`
+- `category`
+- `question`
+- `context`
+- `answer`
+- `theme`
+- `requirement_type`
+- `value`
+- `unit`
+- `applies_to`
+- `source_doc`
+- `source_pages`
 
+This shape is deliberate:
+- it keeps scoring simple
+- it gives GEPA clean textual feedback
+- it is much easier to validate than open-ended summaries
 
-class TranslateFrenchToEnglish(dspy.Signature):
-    """Translate the French input into short, natural English."""
+## Simple GEPA Pattern
 
-    french: str = dspy.InputField(desc="French sentence")
-    english: str = dspy.OutputField(desc="Natural English translation")
-
-
-translator = dspy.Predict(TranslateFrenchToEnglish)
-
-print(translator(french="merci beaucoup").english)
-print(translator(french="où est la gare ?").english)
-```
-
-A tiny local model is often good enough to be useful, but not always good enough to be reliably right in the way you want.
-
-That is where GEPA comes in.
-
-### Step 4: create a tiny training set
-
-```python
-pairs = [
-    ("bonjour", "hello"),
-    ("merci beaucoup", "thank you very much"),
-    ("où est la gare ?", "where is the train station?"),
-    ("je suis fatigué", "I am tired"),
-    ("il fait très chaud aujourd'hui", "it is very hot today"),
-    ("je ne comprends pas", "I do not understand"),
-    ("pouvez-vous m'aider ?", "can you help me?"),
-    ("j'aime apprendre le français", "I like learning French"),
-    ("nous arrivons demain matin", "we are arriving tomorrow morning"),
-    ("combien ça coûte ?", "how much does it cost?"),
-]
-
-examples = [
-    dspy.Example(french=fr, english=en).with_inputs("french")
-    for fr, en in pairs
-]
-
-trainset = examples[:8]
-valset = examples[8:]
-```
-
-This is intentionally tiny. The point of the tutorial is the workflow, not leaderboard chasing.
-
-### Step 5: define what “good” means
+Below is a minimal pattern for using a local JSONL dataset.
 
 ```python
-def metric(gold, pred, trace=None, pred_name=None, pred_trace=None):
-    guess = pred.english.strip()
-    target = gold.english.strip()
+import json
+from pathlib import Path
 
-    exact = guess.lower() == target.lower()
-    score = 1.0 if exact else 0.0
-
-    if exact:
-        feedback = (
-            "Exact match. Keep translations short, natural, and direct. "
-            "Do not add explanations."
-        )
-    else:
-        feedback = (
-            f"Expected {target!r} but got {guess!r}. "
-            "Prefer direct, idiomatic English. Preserve tense, pronouns, and politeness. "
-            "Do not explain the translation or add extra words."
-        )
-
-    return dspy.Prediction(score=score, feedback=feedback)
-```
-
-The metric is deliberately simple:
-
-- score exact matches as `1.0`
-- score everything else as `0.0`
-- give GEPA useful textual feedback so it can rewrite the prompt
-
-### Step 6: run GEPA
-
-```python
-gepa = dspy.GEPA(
-    metric=metric,
-    reflection_lm=reflection_lm,
-    auto="light",
-)
-
-optimized = gepa.compile(translator, trainset=trainset, valset=valset)
-```
-
-This is the moment the package earns its keep.
-
-The student model stays local. GEPA uses the stronger subscription model to think about failures and improve the program. That is the whole value proposition in one place.
-
-### Step 7: inspect the optimized program
-
-```python
-print("Optimized instruction:\n")
-print(optimized.signature.instructions)
-print()
-
-print(optimized(french="je ne comprends pas").english)
-print(optimized(french="combien ça coûte ?").english)
-```
-
-A good way to read the result is:
-
-- the local model is still the one doing inference
-- the stronger subscription model helped shape a better instruction
-- you did not need a separate metered API setup for the optimizer model
-
-## A complete copy-paste script
-
-If you prefer one coherent script rather than step-by-step fragments, here is the full version:
-
-```python
 import dspy
 import dspy_lm_auth
 
@@ -261,7 +131,6 @@ student_lm = dspy.LM(
     model_type="chat",
     think=False,
     temperature=0,
-    max_tokens=200,
 )
 
 reflection_lm = dspy.LM("codex/gpt-5.4")
@@ -269,63 +138,58 @@ reflection_lm = dspy.LM("codex/gpt-5.4")
 dspy.configure(lm=student_lm, adapter=dspy.JSONAdapter())
 
 
-class TranslateFrenchToEnglish(dspy.Signature):
-    """Translate the French input into short, natural English."""
+class RequirementAnswer(dspy.Signature):
+    """Answer from retrieved project context with a short, structured result."""
 
-    french: str = dspy.InputField(desc="French sentence")
-    english: str = dspy.OutputField(desc="Natural English translation")
+    question: str = dspy.InputField()
+    context: str = dspy.InputField()
+    answer: str = dspy.OutputField()
+    theme: str = dspy.OutputField()
+    requirement_type: str = dspy.OutputField()
+    value: str = dspy.OutputField()
+    unit: str = dspy.OutputField()
+    applies_to: str = dspy.OutputField()
 
 
-translator = dspy.Predict(TranslateFrenchToEnglish)
+program = dspy.Predict(RequirementAnswer)
 
-pairs = [
-    ("bonjour", "hello"),
-    ("merci beaucoup", "thank you very much"),
-    ("où est la gare ?", "where is the train station?"),
-    ("je suis fatigué", "I am tired"),
-    ("il fait très chaud aujourd'hui", "it is very hot today"),
-    ("je ne comprends pas", "I do not understand"),
-    ("pouvez-vous m'aider ?", "can you help me?"),
-    ("j'aime apprendre le français", "I like learning French"),
-    ("nous arrivons demain matin", "we are arriving tomorrow morning"),
-    ("combien ça coûte ?", "how much does it cost?"),
-]
 
-examples = [
-    dspy.Example(french=fr, english=en).with_inputs("french")
-    for fr, en in pairs
-]
-
-trainset = examples[:8]
-valset = examples[8:]
-
-print("Before optimization:")
-print(translator(french="où est la gare ?").english)
-print(translator(french="je ne comprends pas").english)
-print()
+def load_examples(path: str):
+    rows = [json.loads(line) for line in Path(path).read_text(encoding="utf-8").splitlines() if line.strip()]
+    examples = [
+        dspy.Example(
+            question=row["question"],
+            context=row["context"],
+            answer=row["answer"],
+            theme=row["theme"],
+            requirement_type=row["requirement_type"],
+            value=row["value"],
+            unit=row["unit"],
+            applies_to=row["applies_to"],
+        ).with_inputs("question", "context")
+        for row in rows
+    ]
+    trainset = [x for x, row in zip(examples, rows) if row["split"] == "train"]
+    valset = [x for x, row in zip(examples, rows) if row["split"] == "val"]
+    return trainset, valset
 
 
 def metric(gold, pred, trace=None, pred_name=None, pred_trace=None):
-    guess = pred.english.strip()
-    target = gold.english.strip()
-
-    exact = guess.lower() == target.lower()
-    score = 1.0 if exact else 0.0
-
-    if exact:
-        feedback = (
-            "Exact match. Keep translations short, natural, and direct. "
-            "Do not add explanations."
-        )
-    else:
-        feedback = (
-            f"Expected {target!r} but got {guess!r}. "
-            "Prefer direct, idiomatic English. Preserve tense, pronouns, and politeness. "
-            "Do not explain the translation or add extra words."
-        )
-
+    checks = {
+        "answer": gold.answer.strip().lower() == pred.answer.strip().lower(),
+        "theme": gold.theme.strip().lower() == pred.theme.strip().lower(),
+        "requirement_type": gold.requirement_type.strip().lower() == pred.requirement_type.strip().lower(),
+        "value": gold.value.strip().lower() == pred.value.strip().lower(),
+        "unit": gold.unit.strip().lower() == pred.unit.strip().lower(),
+        "applies_to": gold.applies_to.strip().lower() == pred.applies_to.strip().lower(),
+    }
+    score = sum(checks.values()) / len(checks)
+    failures = [name for name, ok in checks.items() if not ok]
+    feedback = "All fields correct." if not failures else f"Incorrect fields: {', '.join(failures)}."
     return dspy.Prediction(score=score, feedback=feedback)
 
+
+trainset, valset = load_examples("datasets/afso_requirements_gepa_v1.jsonl")
 
 gepa = dspy.GEPA(
     metric=metric,
@@ -333,79 +197,25 @@ gepa = dspy.GEPA(
     auto="light",
 )
 
-optimized = gepa.compile(translator, trainset=trainset, valset=valset)
-
-print("Optimized instruction:\n")
-print(optimized.signature.instructions)
-print()
-
-print("After optimization:")
-print(optimized(french="où est la gare ?").english)
-print(optimized(french="je ne comprends pas").english)
-print(optimized(french="combien ça coûte ?").english)
+optimized = gepa.compile(program, trainset=trainset, valset=valset)
 ```
 
-## When you outgrow the laptop: the same idea on a GPU box
+## What This Fork Is For
 
-The laptop workflow is the easiest place to start.
+This fork is a practical base for:
+- quickly validating whether GEPA improves a structured QA prompt
+- checking whether a local student model is good enough for a narrow internal task
+- iterating on small datasets before scaling annotation effort
 
-When you want more speed or more context, keep the exact same mental model and swap only the student model:
+It is not trying to be a polished benchmark suite or a general-purpose RAG framework.
 
-- laptop: `Ollama + qwen3.5:0.8b`
-- GPU box: `vLLM + Qwen/Qwen3.5-0.8B`
+## If You Only Want The Auth Piece
 
-### Minimal GPU setup
-
-SSH into the GPU box:
-
-```bash
-ssh YOUR_GPU_BOX
-```
-
-Install `uv` and `vllm`:
-
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-export PATH="$HOME/.local/bin:$PATH"
-
-uv python install 3.12
-uv venv ~/.venvs/vllm-qwen35-08b --python 3.12
-uv pip install --python ~/.venvs/vllm-qwen35-08b/bin/python vllm
-```
-
-Launch the model:
-
-```bash
-CUDA_VISIBLE_DEVICES=0 ~/.venvs/vllm-qwen35-08b/bin/vllm serve Qwen/Qwen3.5-0.8B \
-  --host 0.0.0.0 \
-  --port 8000 \
-  --served-model-name local-model \
-  --dtype float16 \
-  --gpu-memory-utilization 0.25 \
-  --max-model-len 2048
-```
-
-Then swap the student model definition in DSPy to:
-
-```python
-student_lm = dspy.LM(
-    "openai/local-model",
-    api_base="http://YOUR_GPU_BOX:8000/v1",
-    api_key="",
-    model_type="chat",
-)
-```
-
-Everything else in the GEPA workflow stays the same.
-
-## If you only want the auth piece
-
-You can also use `dspy-lm-auth` without the local-model tutorial.
+You can still use the package on its own.
 
 ```python
 import dspy
 import dspy_lm_auth
-
 
 dspy_lm_auth.install()
 
@@ -415,7 +225,7 @@ dspy.configure(lm=lm)
 print(lm("hello")[0]["text"])
 ```
 
-Or keep the original provider and select the auth route explicitly:
+Or explicitly keep the original provider name and select the auth route:
 
 ```python
 import dspy_lm_auth
@@ -424,15 +234,14 @@ lm = dspy_lm_auth.LM("openai/gpt-5.4", auth_provider="codex")
 print(lm("hello")[0]["text"])
 ```
 
-## Credential resolution
+## Credential Resolution
 
 API key credentials can be stored as:
-
 - a literal value
 - an environment variable name
 - a shell lookup prefixed with `!`
 
-Examples:
+Example:
 
 ```json
 {
@@ -443,31 +252,12 @@ Examples:
 }
 ```
 
-```json
-{
-  "some-provider": {
-    "type": "api_key",
-    "key": "!op read op://Private/openai/api_key --no-newline"
-  }
-}
-```
-
 ## Development
 
 ```bash
 uv sync --extra dev
-uv run pytest
-uv run ruff check src tests
+.venv\Scripts\python.exe -m pytest
 ```
-
-## Roadmap
-
-The package is structured so more Pi-like providers can be added later, for example:
-
-- Anthropic subscription auth
-- GitHub Copilot
-- Gemini CLI
-- Antigravity
 
 ## License
 
