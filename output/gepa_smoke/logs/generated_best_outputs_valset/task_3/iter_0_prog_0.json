@@ -1,0 +1,8 @@
+{
+    "answer": "inf\u00e9rieur \u00e0 0,85 fois le BBio max moyen",
+    "theme": "performance",
+    "requirement_type": "absence",
+    "value": "BBio < 0,85 * BBio_max_moyen",
+    "unit": "",
+    "applies_to": "constructions neuves"
+}

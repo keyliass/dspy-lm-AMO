@@ -1,0 +1,8 @@
+{
+    "answer": "fonctionnement",
+    "theme": "fonctionnement",
+    "requirement_type": "performance",
+    "value": "le controle du fonctionnement des compteurs d'energie",
+    "unit": "",
+    "applies_to": "compteurs d'energie"
+}

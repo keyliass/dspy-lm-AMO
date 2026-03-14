@@ -27,6 +27,15 @@ The current starter dataset is:
 
 It is intentionally small and stable so prompt optimization can be tested quickly before moving to larger internal datasets.
 
+The current benchmark script is:
+- [`examples/gepa_smoke_test.py`](examples/gepa_smoke_test.py)
+
+It runs:
+- a local student model through Ollama
+- `codex/gpt-5.4` as the GEPA reflection model
+- a structured extraction task on the house JSONL dataset
+- before/after evaluation on both `val` and `test`
+
 ## Install
 
 ```bash
@@ -82,6 +91,56 @@ reflection_lm = dspy.LM("codex/gpt-5.4")
 dspy.configure(lm=student_lm, adapter=dspy.JSONAdapter())
 ```
 
+## Practical Workflow
+
+For this fork, the practical loop is:
+1. authenticate Codex once
+2. run a local student model with Ollama
+3. benchmark the current prompt on `val` and `test`
+4. run GEPA
+5. compare before/after scores and inspect optimized instructions
+
+On Windows PowerShell, the shortest path is:
+
+```powershell
+uv sync --extra dev
+.venv\Scripts\python.exe examples\gepa_smoke_test.py --login --skip-gepa
+```
+
+Then start using the benchmark script directly.
+
+## Running The Benchmark
+
+Quick auth and dataset check only:
+
+```powershell
+.venv\Scripts\python.exe examples\gepa_smoke_test.py --skip-gepa
+```
+
+Quick smoke run with the default local student model:
+
+```powershell
+.venv\Scripts\python.exe examples\gepa_smoke_test.py --profile smoke
+```
+
+More credible local benchmark:
+
+```powershell
+.venv\Scripts\python.exe examples\gepa_smoke_test.py --profile solid
+```
+
+Stronger local benchmark with a larger student model:
+
+```powershell
+.venv\Scripts\python.exe examples\gepa_smoke_test.py --profile solid --student-model ollama_chat/qwen3.5:4b
+```
+
+Useful notes:
+- the script defaults to `ollama_chat/qwen3.5:0.8b` for faster local iteration
+- `qwen3.5:4b` is a better reference point when you want a more serious GEPA benchmark
+- the `solid` profile uses the weighted metric and controlled ontologies implemented in [`examples/gepa_smoke_test.py`](examples/gepa_smoke_test.py)
+- the script writes artifacts under `output/gepa_smoke/`
+
 ## Dataset Shape
 
 The house dataset in this fork is JSONL.
@@ -109,6 +168,12 @@ This shape is deliberate:
 - it keeps scoring simple
 - it gives GEPA clean textual feedback
 - it is much easier to validate than open-ended summaries
+
+The benchmark metric is no longer a pure exact-match metric. The current script uses:
+- weighted field scoring
+- controlled ontologies for `theme`, `requirement_type`, and `unit`
+- tolerant text similarity for `answer`, `value`, and `applies_to`
+- explicit feedback per field so GEPA can refine the prompt more usefully
 
 ## Simple GEPA Pattern
 
@@ -200,6 +265,24 @@ gepa = dspy.GEPA(
 optimized = gepa.compile(program, trainset=trainset, valset=valset)
 ```
 
+## Artifacts
+
+After a run, the script writes:
+- `output/gepa_smoke/gepa_smoke_report.json`
+- `output/gepa_smoke/optimized_instructions.txt`
+
+The report contains:
+- student model used
+- GEPA config used
+- before/after `val`
+- before/after `test`
+- score deltas
+- per-example breakdowns
+
+This makes it possible to distinguish:
+- a setup that only improves on `val`
+- a setup that also improves on `test`
+
 ## What This Fork Is For
 
 This fork is a practical base for:
@@ -208,6 +291,11 @@ This fork is a practical base for:
 - iterating on small datasets before scaling annotation effort
 
 It is not trying to be a polished benchmark suite or a general-purpose RAG framework.
+
+At this stage, the most useful interpretation is:
+- `0.8b` is good for fast iteration
+- `4b` is better for a more credible benchmark
+- improvements should now come mostly from dataset and metric cleanup, not from changing the overall repository structure
 
 ## If You Only Want The Auth Piece
 

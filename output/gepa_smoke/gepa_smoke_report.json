@@ -1,0 +1,1121 @@
+{
+  "dataset": "E:\\Dev\\Projets\\TRAINING\\dspy-lm\\datasets\\afso_requirements_gepa_v1.jsonl",
+  "student_model": "ollama_chat/qwen3.5:4b",
+  "student_api_base": "http://127.0.0.1:11434",
+  "reflection_model": "codex/gpt-5.4",
+  "profile": "solid",
+  "gepa_config": {
+    "reflection_minibatch_size": 4,
+    "add_format_failure_as_feedback": true,
+    "track_stats": true,
+    "track_best_outputs": false,
+    "num_threads": 1,
+    "max_merge_invocations": 6,
+    "max_metric_calls": 240
+  },
+  "train_count": 30,
+  "val_count": 9,
+  "test_count": 9,
+  "before_val": {
+    "example_count": 9,
+    "average_score": 0.5255540905289616,
+    "field_accuracy": {
+      "answer": 0.6365453631926499,
+      "theme": 0.4444444444444444,
+      "requirement_type": 0.3333333333333333,
+      "value": 0.46097964089850507,
+      "unit": 0.7777777777777778,
+      "applies_to": 0.567283950617284
+    },
+    "examples": [
+      {
+        "id": "F11",
+        "question": "Quels espaces doivent etre directement accessibles depuis le parvis ?",
+        "score": 0.5607016840417001,
+        "field_scores": {
+          "answer": 0.7441860465116279,
+          "theme": 0.0,
+          "requirement_type": 0.0,
+          "value": 0.7586206896551725,
+          "unit": 1.0,
+          "applies_to": 0.85
+        },
+        "gold": {
+          "answer": "Depuis le parvis doivent etre accessibles les halls d'accueil, le local velo ou trottinette enfants, le local velo du personnel et la salle polyvalente.",
+          "theme": "acces",
+          "requirement_type": "obligation",
+          "value": "halls d'accueil ; local velo enfants ; local velo personnel ; salle polyvalente",
+          "unit": "",
+          "applies_to": "parvis"
+        },
+        "pred": {
+          "answer": "les halls d'accueil, un local velo ou trottinette enfants, un local velo personnel et la salle polyvalente",
+          "theme": "implantation",
+          "requirement_type": "absence",
+          "value": "les halls d'accueil, un local velo ou trottinette enfants, un local velo personnel et la salle polyvalente",
+          "unit": "",
+          "applies_to": "espaces directement accessibles depuis le parvis"
+        }
+      },
+      {
+        "id": "F12",
+        "question": "Combien de halls d'accueil distincts sont demandes pour les enfants ?",
+        "score": 0.4625,
+        "field_scores": {
+          "answer": 0.85,
+          "theme": 0.0,
+          "requirement_type": 1.0,
+          "value": 0.0,
+          "unit": 1.0,
+          "applies_to": 0.0
+        },
+        "gold": {
+          "answer": "Deux halls distincts sont demandes : un hall maternelle et un hall elementaire.",
+          "theme": "acces",
+          "requirement_type": "quantite",
+          "value": "2",
+          "unit": "halls",
+          "applies_to": "accueil des eleves"
+        },
+        "pred": {
+          "answer": "deux",
+          "theme": "implantation",
+          "requirement_type": "quantite",
+          "value": "deux",
+          "unit": "halls",
+          "applies_to": "les enfants"
+        }
+      },
+      {
+        "id": "F13",
+        "question": "Ou doit etre implantee la loge gardien et a quoi sert-elle ?",
+        "score": 0.8,
+        "field_scores": {
+          "answer": 0.19999999999999998,
+          "theme": 1.0,
+          "requirement_type": 1.0,
+          "value": 1.0,
+          "unit": 1.0,
+          "applies_to": 1.0
+        },
+        "gold": {
+          "answer": "La loge gardien doit etre situee entre le hall maternelle et le hall elementaire ; elle filtre les entrees et fait le lien entre les deux etablissements.",
+          "theme": "implantation",
+          "requirement_type": "implantation",
+          "value": "entre les deux halls",
+          "unit": "",
+          "applies_to": "loge gardien"
+        },
+        "pred": {
+          "answer": "entre les deux halls",
+          "theme": "implantation",
+          "requirement_type": "implantation",
+          "value": "entre les deux halls",
+          "unit": "",
+          "applies_to": "loge gardien"
+        }
+      },
+      {
+        "id": "T11",
+        "question": "Quel objectif BBio est fixe pour les constructions neuves ?",
+        "score": 0.7141666666666667,
+        "field_scores": {
+          "answer": 0.85,
+          "theme": 1.0,
+          "requirement_type": 0.0,
+          "value": 0.6666666666666667,
+          "unit": 1.0,
+          "applies_to": 0.85
+        },
+        "gold": {
+          "answer": "L'objectif est un BBio strictement inferieur a 0,85 fois le BBio max moyen.",
+          "theme": "performance",
+          "requirement_type": "performance",
+          "value": "< 0.85 x BBio max moyen",
+          "unit": "",
+          "applies_to": "enveloppe des constructions neuves"
+        },
+        "pred": {
+          "answer": "inferieur a 0,85 fois le BBio max moyen",
+          "theme": "performance",
+          "requirement_type": "plage_horaire",
+          "value": "inferieur a 0,85 fois le BBio max moyen",
+          "unit": "",
+          "applies_to": "constructions neuves"
+        }
+      },
+      {
+        "id": "T12",
+        "question": "Quel objectif Cep est demande par le programme ?",
+        "score": 0.4625,
+        "field_scores": {
+          "answer": 0.85,
+          "theme": 1.0,
+          "requirement_type": 0.0,
+          "value": 0.4,
+          "unit": 0.0,
+          "applies_to": 0.0
+        },
+        "gold": {
+          "answer": "L'objectif est un Cep inferieur a 0,85 CepMax au seuil 2025 de la RE2020.",
+          "theme": "performance",
+          "requirement_type": "performance",
+          "value": "< 0.85 x CepMax seuil 2025",
+          "unit": "",
+          "applies_to": "constructions neuves"
+        },
+        "pred": {
+          "answer": "un Cep inférieur à 0,85 CepMax",
+          "theme": "performance",
+          "requirement_type": "plage_horaire",
+          "value": "inférieur à 0,85",
+          "unit": "Cep",
+          "applies_to": "programme"
+        }
+      },
+      {
+        "id": "T13",
+        "question": "Quelle exigence d'etancheite a l'air est imposee ?",
+        "score": 0.3027777777777778,
+        "field_scores": {
+          "answer": 0.2222222222222222,
+          "theme": 0.0,
+          "requirement_type": 0.0,
+          "value": 0.5,
+          "unit": 1.0,
+          "applies_to": 0.22222222222222224
+        },
+        "gold": {
+          "answer": "L'etancheite a l'air exigee est Q4Pa-surf inferieure ou egale a 1,0 m3/(h.m2).",
+          "theme": "performance",
+          "requirement_type": "performance",
+          "value": "<= 1.0",
+          "unit": "m3/(h.m2)",
+          "applies_to": "Q4Pa-surf de l'enveloppe"
+        },
+        "pred": {
+          "answer": "1,0 m3 par heure et par metre carre",
+          "theme": "fonctionnement",
+          "requirement_type": "plage_horaire",
+          "value": "inferieure ou egale a 1,0",
+          "unit": "m3/(h.m2)",
+          "applies_to": "etancheite a l'air"
+        }
+      },
+      {
+        "id": "M11",
+        "question": "Comment la gestion de la maintenance doit-elle etre assuree ?",
+        "score": 0.5114583333333333,
+        "field_scores": {
+          "answer": 0.31249999999999994,
+          "theme": 1.0,
+          "requirement_type": 1.0,
+          "value": 0.0,
+          "unit": 1.0,
+          "applies_to": 0.3333333333333333
+        },
+        "gold": {
+          "answer": "La gestion de la maintenance doit assurer preparation, planification, controle et tracabilite des interventions, avec une GMAO ou un moyen equivalent.",
+          "theme": "maintenance",
+          "requirement_type": "obligation",
+          "value": "preparation ; planification ; controle ; tracabilite",
+          "unit": "",
+          "applies_to": "gestion de la maintenance"
+        },
+        "pred": {
+          "answer": "via une GMAO ou par tout autre moyen assurant cette gestion",
+          "theme": "maintenance",
+          "requirement_type": "obligation",
+          "value": "une GMAO ou par tout autre moyen assurant cette gestion",
+          "unit": "",
+          "applies_to": "toutes les interventions de maintenance et d'exploitation"
+        }
+      },
+      {
+        "id": "M12",
+        "question": "Quel controle periodique s'applique aux compteurs d'energie ?",
+        "score": 0.3125,
+        "field_scores": {
+          "answer": 0.85,
+          "theme": 0.0,
+          "requirement_type": 0.0,
+          "value": 0.0,
+          "unit": 0.0,
+          "applies_to": 1.0
+        },
+        "gold": {
+          "answer": "Le fonctionnement des compteurs d'energie doit etre controle au moins une fois par an par un organisme agree, aux frais du prestataire.",
+          "theme": "comptage",
+          "requirement_type": "obligation",
+          "value": "1",
+          "unit": "controle annuel minimum",
+          "applies_to": "compteurs d'energie"
+        },
+        "pred": {
+          "answer": "au moins une fois par an",
+          "theme": "maintenance",
+          "requirement_type": "echeance",
+          "value": "une fois par an",
+          "unit": "",
+          "applies_to": "compteurs d'energie"
+        }
+      },
+      {
+        "id": "M13",
+        "question": "Quel reporting mensuel est demande au prestataire ?",
+        "score": 0.6033823529411765,
+        "field_scores": {
+          "answer": 0.85,
+          "theme": 0.0,
+          "requirement_type": 0.0,
+          "value": 0.8235294117647058,
+          "unit": 1.0,
+          "applies_to": 0.85
+        },
+        "gold": {
+          "answer": "Le reporting mensuel doit presenter l'etat des consommations et l'analytique des operations effectuees.",
+          "theme": "livrable",
+          "requirement_type": "obligation",
+          "value": "etat des consommations ; analytique des operations effectuees",
+          "unit": "",
+          "applies_to": "reporting mensuel"
+        },
+        "pred": {
+          "answer": "l'etat des consommations et l'analytique des operations effectuees",
+          "theme": "reporting",
+          "requirement_type": "absence",
+          "value": "l'etat des consommations et l'analytique des operations effectuees",
+          "unit": "",
+          "applies_to": "le reporting mensuel"
+        }
+      }
+    ]
+  },
+  "after_val": {
+    "example_count": 9,
+    "average_score": 0.6919252120518358,
+    "field_accuracy": {
+      "answer": 0.6408347045595901,
+      "theme": 0.5555555555555556,
+      "requirement_type": 0.8888888888888888,
+      "value": 0.6583652618135377,
+      "unit": 0.8888888888888888,
+      "applies_to": 0.6156966490299823
+    },
+    "examples": [
+      {
+        "id": "F11",
+        "question": "Quels espaces doivent etre directement accessibles depuis le parvis ?",
+        "score": 0.8783588761174969,
+        "field_scores": {
+          "answer": 0.8148148148148148,
+          "theme": 1.0,
+          "requirement_type": 1.0,
+          "value": 0.7586206896551725,
+          "unit": 1.0,
+          "applies_to": 0.85
+        },
+        "gold": {
+          "answer": "Depuis le parvis doivent etre accessibles les halls d'accueil, le local velo ou trottinette enfants, le local velo du personnel et la salle polyvalente.",
+          "theme": "acces",
+          "requirement_type": "obligation",
+          "value": "halls d'accueil ; local velo enfants ; local velo personnel ; salle polyvalente",
+          "unit": "",
+          "applies_to": "parvis"
+        },
+        "pred": {
+          "answer": "Les halls d'accueil, un local vélo ou trottinette enfants, un local vélo personnel et la salle polyvalente en usage hors temps scolaire doivent être accessibles depuis le parvis.",
+          "theme": "acces",
+          "requirement_type": "obligation",
+          "value": "halls d'accueil ; local vélo ou trottinette enfants ; local vélo personnel ; salle polyvalente en usage hors temps scolaire",
+          "unit": "",
+          "applies_to": "espaces accessibles depuis le parvis"
+        }
+      },
+      {
+        "id": "F12",
+        "question": "Combien de halls d'accueil distincts sont demandes pour les enfants ?",
+        "score": 0.6665024630541871,
+        "field_scores": {
+          "answer": 0.5517241379310345,
+          "theme": 0.0,
+          "requirement_type": 1.0,
+          "value": 1.0,
+          "unit": 1.0,
+          "applies_to": 0.28571428571428575
+        },
+        "gold": {
+          "answer": "Deux halls distincts sont demandes : un hall maternelle et un hall elementaire.",
+          "theme": "acces",
+          "requirement_type": "quantite",
+          "value": "2",
+          "unit": "halls",
+          "applies_to": "accueil des eleves"
+        },
+        "pred": {
+          "answer": "Le document souhaite deux halls d'accueil distincts, un pour la maternelle et un pour l'elementaire.",
+          "theme": "locaux",
+          "requirement_type": "quantite",
+          "value": "2",
+          "unit": "halls",
+          "applies_to": "halls d'accueil distincts"
+        }
+      },
+      {
+        "id": "F13",
+        "question": "Ou doit etre implantee la loge gardien et a quoi sert-elle ?",
+        "score": 0.73,
+        "field_scores": {
+          "answer": 0.52,
+          "theme": 1.0,
+          "requirement_type": 0.0,
+          "value": 1.0,
+          "unit": 1.0,
+          "applies_to": 1.0
+        },
+        "gold": {
+          "answer": "La loge gardien doit etre situee entre le hall maternelle et le hall elementaire ; elle filtre les entrees et fait le lien entre les deux etablissements.",
+          "theme": "implantation",
+          "requirement_type": "implantation",
+          "value": "entre les deux halls",
+          "unit": "",
+          "applies_to": "loge gardien"
+        },
+        "pred": {
+          "answer": "La loge gardien doit être implantée entre les deux halls pour assurer le filtrage des entrées ainsi que la liaison entre les deux établissements.",
+          "theme": "implantation",
+          "requirement_type": "obligation",
+          "value": "entre les deux halls",
+          "unit": "",
+          "applies_to": "loge gardien"
+        }
+      },
+      {
+        "id": "T11",
+        "question": "Quel objectif BBio est fixe pour les constructions neuves ?",
+        "score": 0.8373809523809524,
+        "field_scores": {
+          "answer": 0.7428571428571429,
+          "theme": 1.0,
+          "requirement_type": 1.0,
+          "value": 0.6666666666666667,
+          "unit": 1.0,
+          "applies_to": 0.85
+        },
+        "gold": {
+          "answer": "L'objectif est un BBio strictement inferieur a 0,85 fois le BBio max moyen.",
+          "theme": "performance",
+          "requirement_type": "performance",
+          "value": "< 0.85 x BBio max moyen",
+          "unit": "",
+          "applies_to": "enveloppe des constructions neuves"
+        },
+        "pred": {
+          "answer": "L'objectif BBio pour les constructions neuves est inférieur à 0,85 fois le BBio max moyen selon la RE2020.",
+          "theme": "performance",
+          "requirement_type": "performance",
+          "value": "inférieur a 0,85 fois le BBio max moyen",
+          "unit": "",
+          "applies_to": "constructions neuves"
+        }
+      },
+      {
+        "id": "T12",
+        "question": "Quel objectif Cep est demande par le programme ?",
+        "score": 0.5096153846153846,
+        "field_scores": {
+          "answer": 0.5384615384615384,
+          "theme": 0.0,
+          "requirement_type": 1.0,
+          "value": 0.5,
+          "unit": 1.0,
+          "applies_to": 0.0
+        },
+        "gold": {
+          "answer": "L'objectif est un Cep inferieur a 0,85 CepMax au seuil 2025 de la RE2020.",
+          "theme": "performance",
+          "requirement_type": "performance",
+          "value": "< 0.85 x CepMax seuil 2025",
+          "unit": "",
+          "applies_to": "constructions neuves"
+        },
+        "pred": {
+          "answer": "Le programme demande un Cep inférieur à 0,85 CepMax.",
+          "theme": "environnement",
+          "requirement_type": "performance",
+          "value": "0,85",
+          "unit": "",
+          "applies_to": "Cep"
+        }
+      },
+      {
+        "id": "T13",
+        "question": "Quelle exigence d'etancheite a l'air est imposee ?",
+        "score": 0.6807588075880759,
+        "field_scores": {
+          "answer": 0.6341463414634146,
+          "theme": 0.0,
+          "requirement_type": 1.0,
+          "value": 1.0,
+          "unit": 1.0,
+          "applies_to": 0.22222222222222224
+        },
+        "gold": {
+          "answer": "L'etancheite a l'air exigee est Q4Pa-surf inferieure ou egale a 1,0 m3/(h.m2).",
+          "theme": "performance",
+          "requirement_type": "performance",
+          "value": "<= 1.0",
+          "unit": "m3/(h.m2)",
+          "applies_to": "Q4Pa-surf de l'enveloppe"
+        },
+        "pred": {
+          "answer": "Le programme impose une étanchéité à l'air Q4Pa-surf inférieure ou égale à 1,0 m3 par heure et par mètre carré.",
+          "theme": "environnement",
+          "requirement_type": "performance",
+          "value": "1,0",
+          "unit": "m3/(h.m2)",
+          "applies_to": "étanchéité à l'air"
+        }
+      },
+      {
+        "id": "M11",
+        "question": "Comment la gestion de la maintenance doit-elle etre assuree ?",
+        "score": 0.5009009009009009,
+        "field_scores": {
+          "answer": 0.27027027027027023,
+          "theme": 1.0,
+          "requirement_type": 1.0,
+          "value": 0.0,
+          "unit": 1.0,
+          "applies_to": 0.3333333333333333
+        },
+        "gold": {
+          "answer": "La gestion de la maintenance doit assurer preparation, planification, controle et tracabilite des interventions, avec une GMAO ou un moyen equivalent.",
+          "theme": "maintenance",
+          "requirement_type": "obligation",
+          "value": "preparation ; planification ; controle ; tracabilite",
+          "unit": "",
+          "applies_to": "gestion de la maintenance"
+        },
+        "pred": {
+          "answer": "Le prestataire doit préparer, planifier, contrôler et tracer toutes les interventions de maintenance et d'exploitation.",
+          "theme": "maintenance",
+          "requirement_type": "obligation",
+          "value": "préparer, planifier, contrôler et tracer",
+          "unit": "",
+          "applies_to": "toutes les interventions de maintenance et d'exploitation"
+        }
+      },
+      {
+        "id": "M12",
+        "question": "Quel controle periodique s'applique aux compteurs d'energie ?",
+        "score": 0.44047619047619047,
+        "field_scores": {
+          "answer": 0.761904761904762,
+          "theme": 0.0,
+          "requirement_type": 1.0,
+          "value": 0.0,
+          "unit": 0.0,
+          "applies_to": 1.0
+        },
+        "gold": {
+          "answer": "Le fonctionnement des compteurs d'energie doit etre controle au moins une fois par an par un organisme agree, aux frais du prestataire.",
+          "theme": "comptage",
+          "requirement_type": "obligation",
+          "value": "1",
+          "unit": "controle annuel minimum",
+          "applies_to": "compteurs d'energie"
+        },
+        "pred": {
+          "answer": "Le prestataire doit faire assurer, au moins une fois par an, le contrôle du fonctionnement des compteurs d'énergie.",
+          "theme": "maintenance",
+          "requirement_type": "obligation",
+          "value": "au moins une fois par an",
+          "unit": "",
+          "applies_to": "compteurs d'énergie"
+        }
+      },
+      {
+        "id": "M13",
+        "question": "Quel reporting mensuel est demande au prestataire ?",
+        "score": 0.9833333333333334,
+        "field_scores": {
+          "answer": 0.9333333333333333,
+          "theme": 1.0,
+          "requirement_type": 1.0,
+          "value": 1.0,
+          "unit": 1.0,
+          "applies_to": 1.0
+        },
+        "gold": {
+          "answer": "Le reporting mensuel doit presenter l'etat des consommations et l'analytique des operations effectuees.",
+          "theme": "livrable",
+          "requirement_type": "obligation",
+          "value": "etat des consommations ; analytique des operations effectuees",
+          "unit": "",
+          "applies_to": "reporting mensuel"
+        },
+        "pred": {
+          "answer": "Le reporting mensuel doit comporter l'état des consommations et l'analytique des opérations effectuées.",
+          "theme": "livrable",
+          "requirement_type": "obligation",
+          "value": "état des consommations ; analytique des opérations effectuées",
+          "unit": "",
+          "applies_to": "reporting mensuel"
+        }
+      }
+    ]
+  },
+  "before_test": {
+    "example_count": 9,
+    "average_score": 0.6465111362066014,
+    "field_accuracy": {
+      "answer": 0.7221540947956042,
+      "theme": 0.6666666666666666,
+      "requirement_type": 0.2222222222222222,
+      "value": 0.6431689493093001,
+      "unit": 1.0,
+      "applies_to": 0.7184704184704185
+    },
+    "examples": [
+      {
+        "id": "F14",
+        "question": "Quelle contrainte s'applique a l'acces livraison, secours et entretien ?",
+        "score": 0.4644787644787645,
+        "field_scores": {
+          "answer": 0.48648648648648646,
+          "theme": 0.0,
+          "requirement_type": 0.0,
+          "value": 0.5714285714285715,
+          "unit": 1.0,
+          "applies_to": 1.0
+        },
+        "gold": {
+          "answer": "Les livraisons, secours et interventions d'entretien doivent passer par un acces specifique, sans croisement avec les enfants et independant des cours de recreation.",
+          "theme": "flux",
+          "requirement_type": "separation_flux",
+          "value": "acces specifique et independant",
+          "unit": "",
+          "applies_to": "livraisons, secours et entretien"
+        },
+        "pred": {
+          "answer": "Un acces specifique est demande pour les livraisons, les secours et l'entretien",
+          "theme": "acces",
+          "requirement_type": "obligation",
+          "value": "un acces specifique",
+          "unit": "",
+          "applies_to": "livraisons, secours et entretien"
+        }
+      },
+      {
+        "id": "F15",
+        "question": "Des places de stationnement voiture sont-elles prevues pour les enseignants et le personnel ?",
+        "score": 0.7508458646616541,
+        "field_scores": {
+          "answer": 0.85,
+          "theme": 1.0,
+          "requirement_type": 1.0,
+          "value": 0.2105263157894737,
+          "unit": 1.0,
+          "applies_to": 0.8571428571428571
+        },
+        "gold": {
+          "answer": "Non. Aucun parking ni place VL dediee aux enseignants et au personnel n'est prevu.",
+          "theme": "stationnement",
+          "requirement_type": "absence",
+          "value": "aucun parking VL dedie",
+          "unit": "",
+          "applies_to": "enseignants et personnel"
+        },
+        "pred": {
+          "answer": "Non",
+          "theme": "stationnement",
+          "requirement_type": "absence",
+          "value": "aucun parking ni place de stationnement pour vehicules legers dedies aux enseignants et au personnel",
+          "unit": "",
+          "applies_to": "enseignants et le personnel"
+        }
+      },
+      {
+        "id": "F16",
+        "question": "Combien de bureaux de direction doivent etre prevus sur l'equipement et pour qui ?",
+        "score": 0.6125,
+        "field_scores": {
+          "answer": 0.85,
+          "theme": 1.0,
+          "requirement_type": 1.0,
+          "value": 0.0,
+          "unit": 1.0,
+          "applies_to": 0.0
+        },
+        "gold": {
+          "answer": "Trois bureaux de direction sont a prevoir : un pour la maternelle, un pour l'elementaire et un pour l'ALSH.",
+          "theme": "locaux",
+          "requirement_type": "quantite",
+          "value": "3",
+          "unit": "bureaux",
+          "applies_to": "directions maternelle, elementaire et ALSH"
+        },
+        "pred": {
+          "answer": "trois bureaux de direction",
+          "theme": "locaux",
+          "requirement_type": "quantite",
+          "value": "trois",
+          "unit": "bureaux",
+          "applies_to": "l'équipement"
+        }
+      },
+      {
+        "id": "T14",
+        "question": "Quelle vitesse d'air limite est demandee dans les zones d'occupation hors occupation passagere ?",
+        "score": 0.7975,
+        "field_scores": {
+          "answer": 0.85,
+          "theme": 1.0,
+          "requirement_type": 0.0,
+          "value": 1.0,
+          "unit": 1.0,
+          "applies_to": 0.85
+        },
+        "gold": {
+          "answer": "La vitesse d'air limite demandee est de 0,20 m/s dans les zones d'occupation concernees.",
+          "theme": "confort",
+          "requirement_type": "performance",
+          "value": "0.20",
+          "unit": "m/s",
+          "applies_to": "zones d'occupation autre que passagere"
+        },
+        "pred": {
+          "answer": "0,20 m/s",
+          "theme": "confort",
+          "requirement_type": "plage_horaire",
+          "value": "0,20",
+          "unit": "m/s",
+          "applies_to": "zones d'occupation"
+        }
+      },
+      {
+        "id": "T15",
+        "question": "Quel objectif d'autonomie lumineuse est fixe pour les salles d'activite et les bureaux ?",
+        "score": 0.6534090909090909,
+        "field_scores": {
+          "answer": 0.85,
+          "theme": 0.0,
+          "requirement_type": 0.0,
+          "value": 1.0,
+          "unit": 1.0,
+          "applies_to": 0.9090909090909091
+        },
+        "gold": {
+          "answer": "L'autonomie lumineuse cible est superieure a 50 % du temps pendant les heures de jour de la periode d'occupation.",
+          "theme": "confort",
+          "requirement_type": "performance",
+          "value": "> 50",
+          "unit": "% du temps",
+          "applies_to": "salles d'activite et bureaux"
+        },
+        "pred": {
+          "answer": "superieure a 50 % du temps",
+          "theme": "performance",
+          "requirement_type": "plage_horaire",
+          "value": "50 %",
+          "unit": "% du temps",
+          "applies_to": "salles d'activite et les bureaux"
+        }
+      },
+      {
+        "id": "T16",
+        "question": "Quelle consommation energetique cible est fixee dans le cadre du MPGP ?",
+        "score": 0.5952380952380952,
+        "field_scores": {
+          "answer": 0.38095238095238093,
+          "theme": 1.0,
+          "requirement_type": 0.0,
+          "value": 1.0,
+          "unit": 1.0,
+          "applies_to": 0.0
+        },
+        "gold": {
+          "answer": "La consommation energetique cible est de 80 kWhEF/m2/an sur les postes reglementaires.",
+          "theme": "performance",
+          "requirement_type": "performance",
+          "value": "80",
+          "unit": "kWhEF/m2/an",
+          "applies_to": "surfaces renovees et construites"
+        },
+        "pred": {
+          "answer": "80 kWhEF par m2 et par an",
+          "theme": "performance",
+          "requirement_type": "plage_horaire",
+          "value": "80",
+          "unit": "kWhEF/m2/an",
+          "applies_to": "postes reglementaires"
+        }
+      },
+      {
+        "id": "M14",
+        "question": "Quel reporting trimestriel est attendu ?",
+        "score": 0.625,
+        "field_scores": {
+          "answer": 0.85,
+          "theme": 0.0,
+          "requirement_type": 0.0,
+          "value": 0.85,
+          "unit": 1.0,
+          "applies_to": 1.0
+        },
+        "gold": {
+          "answer": "Le reporting trimestriel doit presenter l'avancement de la maintenance.",
+          "theme": "livrable",
+          "requirement_type": "obligation",
+          "value": "avancement de la maintenance",
+          "unit": "",
+          "applies_to": "reporting trimestriel"
+        },
+        "pred": {
+          "answer": "l'avancement de la maintenance",
+          "theme": "maintenance",
+          "requirement_type": "absence",
+          "value": "l'avancement de la maintenance",
+          "unit": "",
+          "applies_to": "reporting trimestriel"
+        }
+      },
+      {
+        "id": "M15",
+        "question": "Que doit contenir le reporting annuel ?",
+        "score": 0.662039312039312,
+        "field_scores": {
+          "answer": 0.7027027027027026,
+          "theme": 1.0,
+          "requirement_type": 0.0,
+          "value": 0.5454545454545454,
+          "unit": 1.0,
+          "applies_to": 1.0
+        },
+        "gold": {
+          "answer": "Le reporting annuel doit inclure le previsionnel de maintenance, le bilan annuel des consommations et le bilan annuel des operations effectuees.",
+          "theme": "livrable",
+          "requirement_type": "obligation",
+          "value": "previsionnel maintenance ; bilan consommations ; bilan operations",
+          "unit": "",
+          "applies_to": "reporting annuel"
+        },
+        "pred": {
+          "answer": "un previsionnel de maintenance, un bilan annuel des consommations et un bilan annuel des operations effectuees",
+          "theme": "livrable",
+          "requirement_type": "absence",
+          "value": "un previsionnel de maintenance, un bilan annuel des consommations et un bilan annuel des operations effectuees",
+          "unit": "",
+          "applies_to": "reporting annuel"
+        }
+      },
+      {
+        "id": "M16",
+        "question": "Quels indicateurs d'appreciation de la performance sont cites pour l'evaluation annuelle ?",
+        "score": 0.6575890985324948,
+        "field_scores": {
+          "answer": 0.6792452830188679,
+          "theme": 1.0,
+          "requirement_type": 0.0,
+          "value": 0.6111111111111112,
+          "unit": 1.0,
+          "applies_to": 0.85
+        },
+        "gold": {
+          "answer": "L'evaluation annuelle cite notamment le taux de service, les dysfonctionnements, les delais d'intervention corrective, les rendements, les controles reglementaires, les consommations energetiques et les reclamations utilisateurs.",
+          "theme": "performance",
+          "requirement_type": "obligation",
+          "value": "taux de service ; dysfonctionnements ; delais correctifs ; rendements ; controles reglementaires ; consommations ; reclamations",
+          "unit": "",
+          "applies_to": "evaluation annuelle des prestations"
+        },
+        "pred": {
+          "answer": "le taux de service, le nombre de dysfonctionnements, la moyenne des delais correctifs, les rendements, les controles reglementaires, les consommations energetiques et les reclamations utilisateurs",
+          "theme": "performance",
+          "requirement_type": "absence",
+          "value": "le taux de service, le nombre de dysfonctionnements, la moyenne des delais correctifs, les rendements, les controles reglementaires, les consommations energetiques et les reclamations utilisateurs",
+          "unit": "",
+          "applies_to": "evaluation annuelle"
+        }
+      }
+    ]
+  },
+  "after_test": {
+    "example_count": 9,
+    "average_score": 0.7193040810676581,
+    "field_accuracy": {
+      "answer": 0.6514098889905128,
+      "theme": 0.7777777777777778,
+      "requirement_type": 0.7777777777777778,
+      "value": 0.6265664160401003,
+      "unit": 1.0,
+      "applies_to": 0.6647667147667148
+    },
+    "examples": [
+      {
+        "id": "F14",
+        "question": "Quelle contrainte s'applique a l'acces livraison, secours et entretien ?",
+        "score": 0.6341463414634146,
+        "field_scores": {
+          "answer": 0.5365853658536585,
+          "theme": 1.0,
+          "requirement_type": 1.0,
+          "value": 0.13333333333333333,
+          "unit": 1.0,
+          "applies_to": 0.6666666666666665
+        },
+        "gold": {
+          "answer": "Les livraisons, secours et interventions d'entretien doivent passer par un acces specifique, sans croisement avec les enfants et independant des cours de recreation.",
+          "theme": "flux",
+          "requirement_type": "separation_flux",
+          "value": "acces specifique et independant",
+          "unit": "",
+          "applies_to": "livraisons, secours et entretien"
+        },
+        "pred": {
+          "answer": "Il faut éviter les croisements avec les enfants et garder cet accès indépendant des cours de récréation.",
+          "theme": "flux",
+          "requirement_type": "separation_flux",
+          "value": "éviter les croisements avec les enfants ; indépendant des cours de récréation",
+          "unit": "",
+          "applies_to": "accès livraison, secours et entretien"
+        }
+      },
+      {
+        "id": "F15",
+        "question": "Des places de stationnement voiture sont-elles prevues pour les enseignants et le personnel ?",
+        "score": 0.6835071549842348,
+        "field_scores": {
+          "answer": 0.5806451612903225,
+          "theme": 1.0,
+          "requirement_type": 1.0,
+          "value": 0.2105263157894737,
+          "unit": 1.0,
+          "applies_to": 0.8571428571428571
+        },
+        "gold": {
+          "answer": "Non. Aucun parking ni place VL dediee aux enseignants et au personnel n'est prevu.",
+          "theme": "stationnement",
+          "requirement_type": "absence",
+          "value": "aucun parking VL dedie",
+          "unit": "",
+          "applies_to": "enseignants et personnel"
+        },
+        "pred": {
+          "answer": "Aucune place de stationnement pour véhicules légers dédiée aux enseignants et au personnel n'est prévue.",
+          "theme": "stationnement",
+          "requirement_type": "absence",
+          "value": "aucun parking ni place de stationnement pour véhicules légers dédiés aux enseignants et au personnel",
+          "unit": "",
+          "applies_to": "enseignants et le personnel"
+        }
+      },
+      {
+        "id": "F16",
+        "question": "Combien de bureaux de direction doivent etre prevus sur l'equipement et pour qui ?",
+        "score": 0.8625,
+        "field_scores": {
+          "answer": 0.85,
+          "theme": 1.0,
+          "requirement_type": 1.0,
+          "value": 1.0,
+          "unit": 1.0,
+          "applies_to": 0.0
+        },
+        "gold": {
+          "answer": "Trois bureaux de direction sont a prevoir : un pour la maternelle, un pour l'elementaire et un pour l'ALSH.",
+          "theme": "locaux",
+          "requirement_type": "quantite",
+          "value": "3",
+          "unit": "bureaux",
+          "applies_to": "directions maternelle, elementaire et ALSH"
+        },
+        "pred": {
+          "answer": "Trois bureaux de direction doivent être prévus : un pour la maternelle, un pour l'élémentaire et un pour l'ALSH.",
+          "theme": "locaux",
+          "requirement_type": "quantite",
+          "value": "3",
+          "unit": "bureaux",
+          "applies_to": "équipements"
+        }
+      },
+      {
+        "id": "T14",
+        "question": "Quelle vitesse d'air limite est demandee dans les zones d'occupation hors occupation passagere ?",
+        "score": 0.9246551724137931,
+        "field_scores": {
+          "answer": 0.7586206896551725,
+          "theme": 1.0,
+          "requirement_type": 1.0,
+          "value": 1.0,
+          "unit": 1.0,
+          "applies_to": 0.85
+        },
+        "gold": {
+          "answer": "La vitesse d'air limite demandee est de 0,20 m/s dans les zones d'occupation concernees.",
+          "theme": "confort",
+          "requirement_type": "performance",
+          "value": "0.20",
+          "unit": "m/s",
+          "applies_to": "zones d'occupation autre que passagere"
+        },
+        "pred": {
+          "answer": "La vitesse d'air limite est de 0,20 m/s.",
+          "theme": "confort",
+          "requirement_type": "performance",
+          "value": "0,20",
+          "unit": "m/s",
+          "applies_to": "zones d'occupation"
+        }
+      },
+      {
+        "id": "T15",
+        "question": "Quel objectif d'autonomie lumineuse est fixe pour les salles d'activite et les bureaux ?",
+        "score": 0.803409090909091,
+        "field_scores": {
+          "answer": 0.85,
+          "theme": 0.0,
+          "requirement_type": 1.0,
+          "value": 1.0,
+          "unit": 1.0,
+          "applies_to": 0.9090909090909091
+        },
+        "gold": {
+          "answer": "L'autonomie lumineuse cible est superieure a 50 % du temps pendant les heures de jour de la periode d'occupation.",
+          "theme": "confort",
+          "requirement_type": "performance",
+          "value": "> 50",
+          "unit": "% du temps",
+          "applies_to": "salles d'activite et bureaux"
+        },
+        "pred": {
+          "answer": "L'autonomie lumineuse doit être supérieure à 50 % du temps sur les heures de jour de la période d'occupation.",
+          "theme": "fonctionnement",
+          "requirement_type": "performance",
+          "value": "> 50",
+          "unit": "% du temps",
+          "applies_to": "salles d'activite et les bureaux"
+        }
+      },
+      {
+        "id": "T16",
+        "question": "Quelle consommation energetique cible est fixee dans le cadre du MPGP ?",
+        "score": 0.9060526315789473,
+        "field_scores": {
+          "answer": 0.6842105263157894,
+          "theme": 1.0,
+          "requirement_type": 1.0,
+          "value": 1.0,
+          "unit": 1.0,
+          "applies_to": 0.85
+        },
+        "gold": {
+          "answer": "La consommation energetique cible est de 80 kWhEF/m2/an sur les postes reglementaires.",
+          "theme": "performance",
+          "requirement_type": "performance",
+          "value": "80",
+          "unit": "kWhEF/m2/an",
+          "applies_to": "surfaces renovees et construites"
+        },
+        "pred": {
+          "answer": "La consommation cible est de 80 kWhEF par m2 et par an sur les postes réglementaires pour l'ensemble des surfaces renovées et construites.",
+          "theme": "performance",
+          "requirement_type": "performance",
+          "value": "80",
+          "unit": "kWhEF/m2/an",
+          "applies_to": "postes réglementaires sur les surfaces renovées et construites"
+        }
+      },
+      {
+        "id": "M14",
+        "question": "Quel reporting trimestriel est attendu ?",
+        "score": 0.1,
+        "field_scores": {
+          "answer": 0.0,
+          "theme": 0.0,
+          "requirement_type": 0.0,
+          "value": 0.0,
+          "unit": 1.0,
+          "applies_to": 0.0
+        },
+        "gold": {
+          "answer": "Le reporting trimestriel doit presenter l'avancement de la maintenance.",
+          "theme": "livrable",
+          "requirement_type": "obligation",
+          "value": "avancement de la maintenance",
+          "unit": "",
+          "applies_to": "reporting trimestriel"
+        },
+        "pred": {
+          "answer": "",
+          "theme": "",
+          "requirement_type": "",
+          "value": "",
+          "unit": "",
+          "applies_to": ""
+        }
+      },
+      {
+        "id": "M15",
+        "question": "Que doit contenir le reporting annuel ?",
+        "score": 0.8690476190476191,
+        "field_scores": {
+          "answer": 0.8095238095238095,
+          "theme": 1.0,
+          "requirement_type": 1.0,
+          "value": 0.6666666666666666,
+          "unit": 1.0,
+          "applies_to": 1.0
+        },
+        "gold": {
+          "answer": "Le reporting annuel doit inclure le previsionnel de maintenance, le bilan annuel des consommations et le bilan annuel des operations effectuees.",
+          "theme": "livrable",
+          "requirement_type": "obligation",
+          "value": "previsionnel maintenance ; bilan consommations ; bilan operations",
+          "unit": "",
+          "applies_to": "reporting annuel"
+        },
+        "pred": {
+          "answer": "Le reporting annuel doit contenir un prévisionnel de maintenance, un bilan annuel des consommations et un bilan annuel des opérations effectuées.",
+          "theme": "livrable",
+          "requirement_type": "obligation",
+          "value": "prévisionnel de maintenance ; bilan annuel des consommations ; bilan annuel des opérations effectuées",
+          "unit": "",
+          "applies_to": "reporting annuel"
+        }
+      },
+      {
+        "id": "M16",
+        "question": "Quels indicateurs d'appreciation de la performance sont cites pour l'evaluation annuelle ?",
+        "score": 0.6904187192118226,
+        "field_scores": {
+          "answer": 0.793103448275862,
+          "theme": 1.0,
+          "requirement_type": 0.0,
+          "value": 0.6285714285714286,
+          "unit": 1.0,
+          "applies_to": 0.85
+        },
+        "gold": {
+          "answer": "L'evaluation annuelle cite notamment le taux de service, les dysfonctionnements, les delais d'intervention corrective, les rendements, les controles reglementaires, les consommations energetiques et les reclamations utilisateurs.",
+          "theme": "performance",
+          "requirement_type": "obligation",
+          "value": "taux de service ; dysfonctionnements ; delais correctifs ; rendements ; controles reglementaires ; consommations ; reclamations",
+          "unit": "",
+          "applies_to": "evaluation annuelle des prestations"
+        },
+        "pred": {
+          "answer": "L'évaluation annuelle cite notamment le taux de service, le nombre de dysfonctionnements, la moyenne des délais correctifs, les rendements, les contrôles réglementaires, les consommations énergétiques et les réclamations utilisateurs.",
+          "theme": "performance",
+          "requirement_type": "absence",
+          "value": "le taux de service ; le nombre de dysfonctionnements ; la moyenne des délais correctifs ; les rendements ; les contrôles réglementaires ; les consommations énergétiques ; les réclamations utilisateurs",
+          "unit": "",
+          "applies_to": "évaluation annuelle"
+        }
+      }
+    ]
+  },
+  "val_score_delta": 0.16637112152287414,
+  "test_score_delta": 0.0727929448610567
+}
